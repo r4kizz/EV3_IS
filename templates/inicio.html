@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Sistema Paulina</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="header-content">
+            <div class="header-title">
+                <p class="eyebrow">Sistema Almacén</p>
+                <h1>Panel principal</h1>
+            </div>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button class="logout-button" type="submit">Cerrar sesión</button>
+            </form>
+        </div>
+    </header>
+    <main class="dashboard-content">
+        <h2>Bienvenido, {{ user.username }}</h2>
+        <p class="welcome-message">Has ingresado exitosamente al prototipo del sistema.</p>
+    </main>
+</body>
+</html>
