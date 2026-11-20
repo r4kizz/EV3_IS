@@ -10,9 +10,12 @@
 <body class="home-page">
     <nav class="topbar">
         <div class="brand">Almacén Paulina</div>
+        {% if puede_crear_usuarios %}
+            <a class="btn btn-light" href="{% url 'nuevo_usuario' %}">Agregar usuario</a>
+        {% endif %}
         <form action="{% url 'logout' %}" method="post" class="logout-form">
             {% csrf_token %}
-            <button class="logout-btn" type="submit">Cerrar sesión ({{ user.username }})</button>
+            <button class="logout-btn" type="submit">Cerrar sesión ({{ usuario.username }})</button>
         </form>
     </nav>
 
