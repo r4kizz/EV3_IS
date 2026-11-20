@@ -1,0 +1,42 @@
+.inventory-card {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+}
+
+.inventory-card .module-header {
+    justify-content: flex-start;
+}
+
+.inventory-card .module-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.inventory-form label {
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.inventory-form input {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid #b7b7b7;
+    border-radius: 0.38rem;
+    background: #fff;
+}
+
+.inventory-form input:focus {
+    outline: 2px solid #0b74d9;
+    outline-offset: 2px;
+}
+
+.inventory-form .errorlist {
+    color: #842029;
+    padding-left: 1.25rem;
+}
+
+.inventory-table {
+    --bs-table-bg: transparent;
+}

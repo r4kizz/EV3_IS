@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventario - Almacén Paulina</title>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/inventario.css' %}">
+</head>
+<body class="home-page">
+    <nav class="topbar">
+        <div class="brand">Almacén Paulina</div>
+        <a class="logout-btn text-decoration-none text-center"
+           href="{% url 'inicio' %}">
+            Volver al menú
+        </a>
+    </nav>
+
+    <main class="container py-4 py-lg-5">
+        <h1 class="h2 mb-4">Inventario</h1>
+
+        {% if error_eliminar %}
+            <section class="module-card inventory-card">
+                <p class="alert alert-warning mb-3" role="alert">
+                    {{ error_eliminar }}
+                </p>
+                <div>
+                    <a class="btn btn-primary" href="{% url 'inventario' %}">
+                        Volver a productos
+                    </a>
+                </div>
+            </section>
+        {% else %}
+            <div class="row g-4 align-items-start">
+                <div class="col-12 col-lg-4">
+                    <section class="module-card inventory-card">
+                        <div class="module-header">
+                            <h2>
+                                {% if producto_editado %}
+                                    Editar producto
+                                {% else %}
+                                    Registrar producto
+                                {% endif %}
+                            </h2>
+                        </div>
+
+                        {% if producto_editado %}
+                            <p>
+                                Stock actual:
+                                <strong>{{ producto_editado.stock_actual }}</strong>
+                            </p>
+                        {% endif %}
+
+                        <form class="inventory-form" method="post">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary w-100">
+                                Guardar producto
+                            </button>
+                            {% if producto_editado %}
+                                <a class="btn btn-outline-secondary w-100 mt-2"
+                                   href="{% url 'inventario' %}">
+                                    Cancelar edición
+                                </a>
+                            {% endif %}
+                        </form>
+                    </section>
+                </div>
+
+                <div class="col-12 col-lg-8">
+                    <section class="module-card inventory-card">
+                        <div class="module-header">
+                            <h2>Productos registrados</h2>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table inventory-table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Nombre</th>
+                                        <th scope="col" class="text-end">Precio</th>
+                                        <th scope="col" class="text-end">Stock</th>
+                                        <th scope="col">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for producto in productos %}
+                                        <tr>
+                                            <td>{{ producto.nombre }}</td>
+                                            <td class="text-end text-nowrap">
+                                                ${{ producto.precio_venta }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ producto.stock_actual }}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <a class="btn btn-sm btn-outline-primary"
+                                                       href="{% url 'editar_producto' producto.id_producto %}">
+                                                        Editar
+                                                    </a>
+                                                    <form method="post"
+                                                          action="{% url 'eliminar_producto' producto.id_producto %}"
+                                                          onsubmit="return confirm('¿Eliminar este producto?');">
+                                                        {% csrf_token %}
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-danger">
+                                                            Eliminar
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="4" class="py-3">
+                                                Aún no hay productos registrados.
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+</body>
+</html>
