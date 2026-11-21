@@ -25,4 +25,6 @@ urlpatterns = [
     path("inventario/<int:id_producto>/editar/",inventario.productos,name="editar_producto",),
     path("inventario/<int:id_producto>/eliminar/",inventario.eliminar_producto,name="eliminar_producto",),
     path("", views.inicio, name="inicio"),
+    path("caja/", views.vista_caja, name="caja"),
+    path("caja/confirmar-venta/", views.api_confirmar_venta, name="api_confirmar_venta"),
 ]

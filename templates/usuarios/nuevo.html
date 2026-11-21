@@ -9,19 +9,60 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="home-page">
-    <main class="container py-5">
-        <div class="card shadow mx-auto p-4" style="max-width: 34rem">
-            <a href="{% url 'inicio' %}">Volver al inicio</a>
-            <h1 class="h3 mt-3">Agregar usuario</h1>
+    <nav class="topbar">
+        <div class="brand">Almacén Paulina</div>
+        <a class="btn btn-light" href="{% url 'nuevo_usuario' %}">
+            Agregar usuario
+        </a>
+        <form action="{% url 'logout' %}" method="post" class="logout-form">
+            {% csrf_token %}
+            <button class="logout-btn" type="submit">
+                Cerrar sesión ({{ usuario.username }})
+            </button>
+        </form>
+    </nav>
+
+    <main class="user-page">
+        <section class="user-form-card">
+            <div class="user-form-heading">
+                <div>
+                    <h1>Agregar usuario</h1>
+                    <p class="text-muted mb-0">Completa los datos para crear una cuenta.</p>
+                </div>
+            </div>
+
             {% for message in messages %}
                 <p class="alert alert-success" role="status">{{ message }}</p>
             {% endfor %}
-            <form method="post">
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <form method="post" class="user-form">
                 {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Crear usuario</button>
+                {% for field in form %}
+                    <div class="user-form-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <div class="d-flex flex-wrap gap-2 pt-2">
+                    <button type="submit" class="btn btn-primary">Crear usuario</button>
+                    <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">
+                        Volver al inicio
+                    </a>
+                </div>
             </form>
-        </div>
+        </section>
     </main>
 </body>
 </html>
