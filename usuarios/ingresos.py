@@ -10,7 +10,7 @@ from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .views import _usuario_actual
+from .views import _usuario_actual, es_paulina
 
 
 def listar_proveedores_activos():
@@ -210,7 +210,8 @@ def registrar_ingreso_factura_atomica(id_proveedor, numero_factura, fecha, obser
 @require_http_methods(["GET"])
 def nuevo_ingreso(request):
     """Renderiza la pantalla para registrar una factura con su detalle de productos."""
-    if _usuario_actual(request) is None:
+    usuario = _usuario_actual(request)
+    if usuario is None:
         return redirect("login")
 
     proveedores = listar_proveedores_activos()
@@ -220,6 +221,7 @@ def nuevo_ingreso(request):
         request,
         "ingresos/nuevo_ingreso.html",
         {
+            "es_paulina": es_paulina(usuario),
             "proveedores": proveedores,
             "productos": productos,
             "fecha_hoy": date.today().strftime("%Y-%m-%d"),
@@ -314,7 +316,8 @@ def api_validar_factura(request):
 @require_http_methods(["GET"])
 def historial_ingresos(request):
     """Consulta el historial de facturas e ingresos de mercadería."""
-    if _usuario_actual(request) is None:
+    usuario = _usuario_actual(request)
+    if usuario is None:
         return redirect("login")
 
     busqueda = request.GET.get("q", "").strip()
@@ -351,6 +354,7 @@ def historial_ingresos(request):
         request,
         "ingresos/historial.html",
         {
+            "es_paulina": es_paulina(usuario),
             "ingresos": ingresos,
             "busqueda": busqueda,
         },

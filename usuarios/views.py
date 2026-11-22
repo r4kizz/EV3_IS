@@ -1,4 +1,5 @@
 import json
+from functools import wraps
 
 from MySQLdb import IntegrityError
 from django.contrib import messages
@@ -36,12 +37,30 @@ def _usuario_actual(request):
     return buscar_usuario(id_usuario=id_usuario) if id_usuario is not None else None
 
 
+def es_paulina(usuario):
+    return usuario is not None and usuario["username"] == "paulina"
+
+
+def solo_paulina(vista):
+    @wraps(vista)
+    def protegida(request, *args, **kwargs):
+        usuario = _usuario_actual(request)
+        if usuario is None:
+            return redirect("login")
+        if not es_paulina(usuario):
+            return render(request, "reportes/acceso_denegado.html", status=403)
+        request.almacen_usuario = usuario
+        return vista(request, *args, **kwargs)
+
+    return protegida
+
+
 @never_cache
 def inicio(request):
     usuario = _usuario_actual(request)
     if usuario is None:
         return redirect("login")
-    return render(request, "inicio.html", {"usuario": usuario, "puede_crear_usuarios": usuario["username"] == "paulina"})
+    return render(request, "inicio.html", {"usuario": usuario, "es_paulina": es_paulina(usuario)})
 
 
 @require_POST
@@ -57,7 +76,7 @@ def nuevo_usuario(request):
     usuario = _usuario_actual(request)
     if usuario is None:
         return redirect("login")
-    if usuario["username"] != "paulina":
+    if not es_paulina(usuario):
         return HttpResponseForbidden("Solo Paulina puede crear usuarios.")
 
     form = CrearUsuarioForm(request.POST if request.method == "POST" else None)

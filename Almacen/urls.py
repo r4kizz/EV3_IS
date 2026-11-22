@@ -2,7 +2,7 @@
 URL configuration for Almacen project.
 """
 from django.urls import path
-from usuarios import caja, ingresos, inventario, proveedores, views
+from usuarios import ingresos, inventario, proveedores, reportes, views
 
 urlpatterns = [
     path("accounts/login/", views.iniciar_sesion, name="login"),
@@ -12,6 +12,7 @@ urlpatterns = [
     path("inventario/<int:id_producto>/editar/", inventario.productos, name="editar_producto"),
     path("inventario/<int:id_producto>/eliminar/", inventario.eliminar_producto, name="eliminar_producto"),
     path("", views.inicio, name="inicio"),
+    path("reportes/", reportes.ranking_ventas, name="reportes"),
     path("caja/", views.vista_caja, name="caja"),
     path("caja/confirmar-venta/", views.api_confirmar_venta, name="api_confirmar_venta"),
     

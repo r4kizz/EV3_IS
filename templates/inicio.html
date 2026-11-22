@@ -12,7 +12,7 @@
 <body class="home-page">
     <nav class="topbar">
         <div class="brand">Almacén Paulina</div>
-        {% if puede_crear_usuarios %}
+        {% if es_paulina %}
             <a class="btn btn-light" href="{% url 'nuevo_usuario' %}">
                 Agregar usuario
             </a>
@@ -49,16 +49,18 @@
             </a>
         </div>
 
-        <div class="module-card">
-            <div class="module-header">
-                <span class="module-icon">🚚</span>
-                <h3>Proveedores</h3>
+        {% if es_paulina %}
+            <div class="module-card">
+                <div class="module-header">
+                    <span class="module-icon">🚚</span>
+                    <h3>Proveedores</h3>
+                </div>
+                <a class="module-status status-blue text-center text-decoration-none"
+                   href="{% url 'proveedores' %}">
+                    Gestionar proveedores
+                </a>
             </div>
-            <a class="module-status status-blue text-center text-decoration-none"
-               href="{% url 'proveedores' %}">
-                Gestionar proveedores
-            </a>
-        </div>
+        {% endif %}
 
         <div class="module-card">
             <div class="module-header">
@@ -71,15 +73,18 @@
             </a>
         </div>
 
-        <div class="module-card">
-            <div class="module-header">
-                <span class="module-icon">📊</span>
-                <h3>Reportes</h3>
+        {% if es_paulina %}
+            <div class="module-card">
+                <div class="module-header">
+                    <span class="module-icon">📊</span>
+                    <h3>Reportes</h3>
+                </div>
+                <a class="module-status status-yellow text-center text-decoration-none"
+                   href="{% url 'reportes' %}">
+                    Abrir reportes
+                </a>
             </div>
-            <button class="module-status status-yellow" disabled>
-                Módulo en desarrollo
-            </button>
-        </div>
+        {% endif %}
     </main>
 </body>
 </html>

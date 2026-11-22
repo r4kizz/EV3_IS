@@ -15,9 +15,11 @@
             <a class="btn btn-success btn-sm text-decoration-none" href="{% url 'nuevo_ingreso' %}">
                 + Registrar Factura
             </a>
-            <a class="btn btn-outline-light btn-sm text-decoration-none" href="{% url 'proveedores' %}">
-                Proveedores
-            </a>
+            {% if es_paulina %}
+                <a class="btn btn-outline-light btn-sm text-decoration-none" href="{% url 'proveedores' %}">
+                    Proveedores
+                </a>
+            {% endif %}
             <a class="logout-btn text-decoration-none text-center" href="{% url 'inicio' %}">
                 Volver al menú
             </a>

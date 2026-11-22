@@ -15,9 +15,11 @@
         <a href="{% url 'ingresos' %}" class="btn btn-outline-light btn-sm">
             Ver Historial de Facturas
         </a>
-        <a href="{% url 'proveedores' %}" class="btn btn-outline-light btn-sm">
-            Proveedores
-        </a>
+        {% if es_paulina %}
+            <a href="{% url 'proveedores' %}" class="btn btn-outline-light btn-sm">
+                Proveedores
+            </a>
+        {% endif %}
         <a href="{% url 'inicio' %}" class="logout-btn text-decoration-none">
             Volver al Menú
         </a>
@@ -60,7 +62,10 @@
                             </select>
                             {% if not proveedores %}
                                 <div class="text-danger small mt-1">
-                                    No hay proveedores registrados. <a href="{% url 'proveedores' %}">Registra uno aquí</a>.
+                                    No hay proveedores registrados.
+                                    {% if es_paulina %}
+                                        <a href="{% url 'proveedores' %}">Registra uno aquí</a>.
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         </div>

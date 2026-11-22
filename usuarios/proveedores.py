@@ -6,9 +6,10 @@ from django import forms
 from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .views import _usuario_actual
+from .views import solo_paulina
 
 
 class ProveedorForm(forms.Form):
@@ -30,11 +31,11 @@ class ProveedorForm(forms.Form):
     )
 
 
+@never_cache
+@solo_paulina
 @require_http_methods(["GET", "POST"])
 def proveedores(request, id_proveedor=None):
-    usuario = _usuario_actual(request)
-    if usuario is None:
-        return redirect("login")
+    usuario = request.almacen_usuario
 
     editando = id_proveedor is not None
     error_rut = None
@@ -129,11 +130,10 @@ def proveedores(request, id_proveedor=None):
     )
 
 
+@never_cache
+@solo_paulina
 @require_POST
 def eliminar_proveedor(request, id_proveedor):
-    if _usuario_actual(request) is None:
-        return redirect("login")
-
     error_eliminar = None
     with closing(MySQLdb.connect(**settings.ALMACEN_DB)) as conexion:
         with conexion.cursor(DictCursor) as cursor:
