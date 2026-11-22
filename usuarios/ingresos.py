@@ -1,6 +1,7 @@
 from contextlib import closing
 from datetime import date
 import json
+import re
 
 import MySQLdb
 from MySQLdb.cursors import DictCursor
@@ -49,6 +50,50 @@ def listar_productos_para_ingreso():
             ]
 
 
+def existe_factura_proveedor(id_proveedor, numero_factura, cursor=None):
+    """
+    Verifica si ya existe una factura registrada con el número dado para el proveedor especificado.
+    Retorna (True, id_ingreso) si existe, o (False, None) si no existe.
+    """
+    num_limpio = str(numero_factura or "").strip()
+    if not num_limpio or not id_proveedor:
+        return False, None
+
+    patron1 = f"Factura N° {num_limpio}"
+    patron2 = f"Factura N° {num_limpio} - %"
+    patron3 = f"Factura N° {num_limpio} %"
+    regex = rf"^Factura\s*N[°oº]?\s*{re.escape(num_limpio)}(\s*-\s*|\s|$)"
+
+    sql = """
+        SELECT id_ingreso, observacion 
+        FROM ingreso_mercancia 
+        WHERE id_proveedor = %s 
+          AND (
+              observacion = %s 
+              OR observacion LIKE %s 
+              OR observacion LIKE %s
+              OR observacion REGEXP %s
+          )
+        LIMIT 1
+    """
+
+    if cursor is not None:
+        cursor.execute(sql, (id_proveedor, patron1, patron2, patron3, regex))
+        res = cursor.fetchone()
+        if res:
+            id_ingreso = res["id_ingreso"] if isinstance(res, dict) else res[0]
+            return True, id_ingreso
+        return False, None
+    else:
+        with closing(MySQLdb.connect(**settings.ALMACEN_DB)) as conexion:
+            with conexion.cursor(DictCursor) as cur:
+                cur.execute(sql, (id_proveedor, patron1, patron2, patron3, regex))
+                res = cur.fetchone()
+                if res:
+                    return True, res["id_ingreso"]
+                return False, None
+
+
 def registrar_ingreso_factura_atomica(id_proveedor, numero_factura, fecha, observacion, items):
     """
     Transacción atómica en MariaDB/MySQL que:
@@ -77,13 +122,23 @@ def registrar_ingreso_factura_atomica(id_proveedor, numero_factura, fecha, obser
             conexion.begin()
             with conexion.cursor() as cursor:
                 # Validar existencia de proveedor si se indicó
+                nombre_proveedor = "el proveedor"
                 if id_proveedor:
                     cursor.execute(
-                        "SELECT id_proveedor FROM proveedor WHERE id_proveedor = %s",
+                        "SELECT nombre FROM proveedor WHERE id_proveedor = %s",
                         (id_proveedor,),
                     )
-                    if cursor.fetchone() is None:
+                    prov = cursor.fetchone()
+                    if prov is None:
                         raise ValueError("El proveedor seleccionado no existe.")
+                    nombre_proveedor = prov[0] if isinstance(prov, (tuple, list)) else prov.get("nombre", "el proveedor")
+
+                # Validar que no se duplique la factura para este proveedor
+                duplicada, id_existente = existe_factura_proveedor(id_proveedor, num_factura, cursor=cursor)
+                if duplicada:
+                    raise ValueError(
+                        f"Ya existe una factura registrada con el N° '{num_factura}' para {nombre_proveedor} (Comprobante #{id_existente})."
+                    )
 
                 # 1. Registrar cabecera del ingreso de mercadería
                 cursor.execute(
@@ -223,6 +278,37 @@ def api_confirmar_ingreso(request):
             {"ok": False, "error": f"Error interno al procesar el ingreso: {str(e)}"},
             status=500,
         )
+
+
+@require_http_methods(["GET"])
+def api_validar_factura(request):
+    """Endpoint para comprobar si ya existe una factura para un proveedor antes de enviarla."""
+    if _usuario_actual(request) is None:
+        return JsonResponse({"ok": False, "error": "No autorizado."}, status=401)
+
+    id_proveedor = request.GET.get("id_proveedor")
+    numero_factura = request.GET.get("numero_factura", "").strip()
+
+    if not id_proveedor or not numero_factura:
+        return JsonResponse({"ok": True, "duplicada": False})
+
+    try:
+        id_prov = int(id_proveedor)
+        duplicada, id_existente = existe_factura_proveedor(id_prov, numero_factura)
+        return JsonResponse(
+            {
+                "ok": True,
+                "duplicada": duplicada,
+                "id_ingreso": id_existente,
+                "mensaje": (
+                    f"Ya existe una factura registrada con el N° '{numero_factura}' para este proveedor (Comprobante #{id_existente})."
+                    if duplicada
+                    else ""
+                ),
+            }
+        )
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)}, status=500)
 
 
 @require_http_methods(["GET"])
