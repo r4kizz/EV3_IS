@@ -4,7 +4,6 @@ import MySQLdb
 from MySQLdb.cursors import DictCursor
 from django.conf import settings
 
-
 from .passwords import verificar_password
 
 
@@ -12,7 +11,7 @@ def buscar_usuario(id_usuario):
     with closing(MySQLdb.connect(**settings.ALMACEN_DB)) as conexion:
         with conexion.cursor(DictCursor) as cursor:
             cursor.execute(
-                "SELECT username FROM usuario WHERE id_usuario = %s "
+                "SELECT id_usuario, username, correo, rol FROM usuario WHERE id_usuario = %s "
                 "AND (bloqueado_hasta IS NULL OR bloqueado_hasta <= UTC_TIMESTAMP())",
                 (id_usuario,),
             )
