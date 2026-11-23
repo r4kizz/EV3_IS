@@ -50,6 +50,15 @@ def unidades_por_producto(desde, hasta):
             return cursor.fetchall()
 
 
+def escala_unidades(total):
+    total = int(total)
+    paso_minimo = (total + 4) // 5
+    base = 10 ** (len(str(paso_minimo)) - 1)
+    paso = next(base * factor for factor in (1, 2, 5, 10) if base * factor >= paso_minimo)
+    tope = ((total + paso - 1) // paso) * paso
+    return range(tope, -1, -paso)
+
+
 @never_cache
 @solo_paulina
 @require_safe
@@ -64,15 +73,32 @@ def ranking_ventas(request):
         return render(request, "reportes/ranking.html", {"form": form})
 
     mas_vendidos = unidades_por_producto(form.cleaned_data["desde"], form.cleaned_data["hasta"])
+    if not mas_vendidos:
+        return render(request, "reportes/ranking.html", {"form": form})
+
     menos_vendidos = sorted(mas_vendidos, key=lambda producto: producto["unidades"])
+    mayor, menor = mas_vendidos[0], menos_vendidos[0]
+    if len(mas_vendidos) == 1:
+        comparacion = [("Único producto vendido", mayor["nombre"], mayor["unidades"])]
+    elif mayor["unidades"] == menor["unidades"]:
+        nombre = f"{len(mas_vendidos)} productos empatados"
+        comparacion = [("Mismas unidades vendidas", nombre, mayor["unidades"])]
+    else:
+        comparacion = [
+            ("Más vendido", mayor["nombre"], mayor["unidades"]),
+            ("Menos vendido", menor["nombre"], menor["unidades"]),
+        ]
+
     return render(
         request,
         "reportes/ranking.html",
         {
             "form": form,
+            "comparacion": comparacion,
+            "escala": escala_unidades(mayor["unidades"]),
             "rankings": [
                 ("Productos más vendidos", mas_vendidos),
                 ("Productos menos vendidos", menos_vendidos),
-            ] if mas_vendidos else [],
+            ],
         },
     )

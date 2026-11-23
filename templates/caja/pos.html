@@ -9,11 +9,15 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body class="bg-light">
+    <nav class="topbar" aria-label="Navegación de Caja">
+        <div class="brand">Almacén Paulina</div>
+        <a class="logout-btn text-decoration-none text-center" href="{% url 'inicio' %}">
+            <span aria-hidden="true">&larr;</span> Volver al menú
+        </a>
+    </nav>
+
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Caja - Registro de Ventas</h2>
-        <a href="{% url 'inicio' %}" class="btn btn-outline-secondary">Volver al Inicio</a>
-    </div>
+    <h1 class="h2 mb-3">Caja - Registro de Ventas</h1>
 
     <!-- Alertas dinámicas -->
     <div id="alertaCaja" class="alert d-none" role="alert"></div>
