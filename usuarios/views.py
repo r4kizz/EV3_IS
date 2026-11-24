@@ -26,7 +26,11 @@ def iniciar_sesion(request):
             request.session["almacen_usuario_id"] = id_usuario
             rotate_token(request)
             return redirect("inicio")
-        mensaje = "la cuenta se encuentra bloqueada" if bloqueado else "credenciales incorrectas"
+        mensaje = (
+            "la cuenta se encuentra bloqueada por un minuto"
+            if bloqueado
+            else "credenciales incorrectas"
+        )
         form.add_error(None, mensaje)
 
     return render(request, "registration/login.html", {"form": form})

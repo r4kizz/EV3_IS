@@ -78,8 +78,24 @@
                             <h2>Productos registrados</h2>
                         </div>
 
+                        <div class="inventory-search mb-3">
+                            <label class="visually-hidden" for="busquedaProducto">
+                                Buscar producto
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text" aria-hidden="true">⌕</span>
+                                <input
+                                    type="search"
+                                    id="busquedaProducto"
+                                    class="form-control"
+                                    placeholder="Buscar producto por nombre..."
+                                    autocomplete="off"
+                                >
+                            </div>
+                        </div>
+
                         <div class="table-responsive">
-                            <table class="table inventory-table align-middle mb-0">
+                            <table id="tablaProductos" class="table inventory-table align-middle mb-0">
                                 <thead>
                                     <tr>
                                         <th scope="col">Nombre</th>
@@ -90,7 +106,7 @@
                                 </thead>
                                 <tbody>
                                     {% for producto in productos %}
-                                        <tr>
+                                        <tr class="producto-row" data-nombre="{{ producto.nombre|lower }}">
                                             <td>{{ producto.nombre }}</td>
                                             <td class="text-end text-nowrap">
                                                 ${{ producto.precio_venta }}
@@ -117,7 +133,7 @@
                                             </td>
                                         </tr>
                                     {% empty %}
-                                        <tr>
+                                        <tr id="sinProductosRegistrados">
                                             <td colspan="4" class="py-3">
                                                 Aún no hay productos registrados.
                                             </td>
@@ -125,11 +141,42 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            <p id="sinResultadosBusqueda" class="text-muted text-center py-3 mb-0 d-none">
+                                No se encontraron productos con esa búsqueda.
+                            </p>
                         </div>
                     </section>
                 </div>
             </div>
         {% endif %}
     </main>
+    <script>
+        (() => {
+            const buscador = document.getElementById("busquedaProducto");
+            const filas = Array.from(document.querySelectorAll(".producto-row"));
+            const sinResultados = document.getElementById("sinResultadosBusqueda");
+            const sinProductos = document.getElementById("sinProductosRegistrados");
+
+            if (!buscador) return;
+
+            buscador.addEventListener("input", () => {
+                const termino = buscador.value.trim().toLowerCase();
+                let visibles = 0;
+
+                filas.forEach((fila) => {
+                    const coincide = fila.dataset.nombre.includes(termino);
+                    fila.classList.toggle("d-none", !coincide);
+                    if (coincide) visibles += 1;
+                });
+
+                if (sinResultados) {
+                    sinResultados.classList.toggle("d-none", visibles !== 0 || termino === "");
+                }
+                if (sinProductos) {
+                    sinProductos.classList.toggle("d-none", termino !== "");
+                }
+            });
+        })();
+    </script>
 </body>
 </html>

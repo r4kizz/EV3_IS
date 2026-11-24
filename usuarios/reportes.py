@@ -50,6 +50,35 @@ def unidades_por_producto(desde, hasta):
             return cursor.fetchall()
 
 
+def ventas_en_rango(desde, hasta):
+    """Obtiene el registro de ventas realizadas dentro del rango seleccionado."""
+    with closing(MySQLdb.connect(**settings.ALMACEN_DB)) as conexion:
+        with conexion.cursor(DictCursor) as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    v.id_venta,
+                    DATE_FORMAT(v.fecha, '%%d/%%m/%%Y') AS fecha,
+                    TIME_FORMAT(v.hora, '%%H:%%i') AS hora,
+                    v.total,
+                    v.medio_pago,
+                    GROUP_CONCAT(
+                        DISTINCT p.nombre
+                        ORDER BY p.nombre ASC
+                        SEPARATOR ', '
+                    ) AS productos
+                FROM venta v
+                JOIN detalle_venta d ON d.id_venta = v.id_venta
+                JOIN producto p ON p.id_producto = d.id_producto
+                WHERE v.fecha BETWEEN %s AND %s
+                GROUP BY v.id_venta, v.fecha, v.hora, v.total, v.medio_pago
+                ORDER BY v.fecha DESC, v.hora DESC, v.id_venta DESC
+                """,
+                (desde, hasta),
+            )
+            return cursor.fetchall()
+
+
 def escala_unidades(total):
     total = int(total)
     paso_minimo = (total + 4) // 5
@@ -72,9 +101,10 @@ def ranking_ventas(request):
     if not form.is_valid():
         return render(request, "reportes/ranking.html", {"form": form})
 
+    ventas = ventas_en_rango(form.cleaned_data["desde"], form.cleaned_data["hasta"])
     mas_vendidos = unidades_por_producto(form.cleaned_data["desde"], form.cleaned_data["hasta"])
     if not mas_vendidos:
-        return render(request, "reportes/ranking.html", {"form": form})
+        return render(request, "reportes/ranking.html", {"form": form, "ventas": ventas})
 
     menos_vendidos = sorted(mas_vendidos, key=lambda producto: producto["unidades"])
     mayor, menor = mas_vendidos[0], menos_vendidos[0]
@@ -94,6 +124,7 @@ def ranking_ventas(request):
         "reportes/ranking.html",
         {
             "form": form,
+            "ventas": ventas,
             "comparacion": comparacion,
             "escala": escala_unidades(mayor["unidades"]),
             "rankings": [

@@ -78,3 +78,11 @@
     overflow-wrap: anywhere;
     text-align: center;
 }
+
+.registro-ventas .table-responsive {
+    scrollbar-width: thin;
+}
+
+.registro-ventas .table {
+    border-radius: 0.5rem;
+}
